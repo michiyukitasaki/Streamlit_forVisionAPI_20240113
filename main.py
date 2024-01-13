@@ -1,22 +1,19 @@
 
 
-
-
-
-
-
-
 api_key = "AIzaSyAwmqgp-TzVphXOI6bFpwRTxE8BDuRk12E"
-
-
 
 import streamlit as st
 import pandas as pd
+import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 import requests
 import io
 import base64
 import math
+import shutil
+import tempfile
+import os
+import zipfile
 
 def calculate_dimensions(vertices, calibration_factor):
     width = math.sqrt((vertices[1]['x'] - vertices[0]['x'])**2 + (vertices[1]['y'] - vertices[0]['y'])**2) * calibration_factor
@@ -74,7 +71,7 @@ if analyze_button and uploaded_files:
             else:
                 image_with_box = draw_bounding_box(image.copy(), vertices)
             long_side, short_side = calculate_dimensions(vertices, calibration_factor)
-            data.append({"ファイル名": uploaded_file.name, "長辺(cm)": long_side, "短辺(cm)": short_side})
+            data.append({"filename": uploaded_file.name, "長辺(cm)": long_side, "短辺(cm)": short_side})
             images_to_show.append(image_with_box)
 
     for i in range(0, len(images_to_show), 4):
@@ -83,9 +80,28 @@ if analyze_button and uploaded_files:
             col.image(image, width=150)
 
     df = pd.DataFrame(data)
-    st.download_button(
-        label="Download data as CSV",
-        data=df.to_csv(index=False).encode('utf-8'),
-        file_name='bounding_boxes.csv',
-        mime='text/csv',
-    )
+    stats = df.describe().round(2) if not df.empty else pd.DataFrame()
+
+    # 一時ファイルの作成
+    with tempfile.TemporaryDirectory() as tmpdir:
+        df_path = os.path.join(tmpdir, 'result.csv')
+        stats_path = os.path.join(tmpdir, 'statistics.csv')
+        zip_path = os.path.join(tmpdir, 'data.zip')
+
+        # CSVファイルの保存
+        df.to_csv(df_path, index=False)
+        stats.to_csv(stats_path)
+
+        # ZIPファイルの作成
+        with zipfile.ZipFile(zip_path, 'w') as zipf:
+            zipf.write(df_path, 'result.csv')
+            zipf.write(stats_path, 'statistics.csv')
+
+        # ZIPファイルのダウンロード
+        with open(zip_path, 'rb') as f:
+            st.download_button(
+                label="Download CSV files as ZIP",
+                data=f,
+                file_name='data.zip',
+                mime='application/zip'
+            )
