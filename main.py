@@ -1,7 +1,3 @@
-
-
-api_key = "AIzaSyAwmqgp-TzVphXOI6bFpwRTxE8BDuRk12E"
-
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -14,6 +10,8 @@ import shutil
 import tempfile
 import os
 import zipfile
+
+api_key = "AIzaSyAwmqgp-TzVphXOI6bFpwRTxE8BDuRk12E"
 
 def calculate_dimensions(vertices, calibration_factor):
     width = math.sqrt((vertices[1]['x'] - vertices[0]['x'])**2 + (vertices[1]['y'] - vertices[0]['y'])**2) * calibration_factor
