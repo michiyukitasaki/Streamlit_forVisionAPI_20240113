@@ -11,8 +11,7 @@ import tempfile
 import os
 import zipfile
 
-api_key = "AIzaSyAwmqgp-TzVphXOI6bFpwRTxE8BDuRk12E"
-
+api_key = st.secrets['gcp_key']['GCP_API_KEY']
 def calculate_dimensions(vertices, calibration_factor):
     width = math.sqrt((vertices[1]['x'] - vertices[0]['x'])**2 + (vertices[1]['y'] - vertices[0]['y'])**2) * calibration_factor
     height = math.sqrt((vertices[2]['x'] - vertices[1]['x'])**2 + (vertices[2]['y'] - vertices[1]['y'])**2) * calibration_factor
